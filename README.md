@@ -18,7 +18,7 @@ Requirements:
 
 ### Assumptions
 --- 
-- It was assumed that the service is already PCI-certified for storing credit cards.
+- It was assumed that the service is already PCI-certified for storing credit cards. Cards are stored per transaction, we cannot use them, just as an example. They could be moved later.
 - In the project phase, I decided to store cards but not tokenise them. It only works with credit cards in the body for the time being.
 - Amount: integer number of cents, so if you would like to purchase $40.23, you need to pass an amount of 4023. This makes it easy to handle different currencies and always be taken as an integer in the backend.
 - Bank Simulator is a static API. It does not store or register anything. It only validates the information received and returns as configured.
