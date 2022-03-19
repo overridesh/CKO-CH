@@ -1,0 +1,212 @@
+syntax="proto3";
+
+package payment_gateway;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+// Defines the import path that should be used to import the generated package,
+// and the package name.
+option go_package = "github.com/overridesh/checkout-challenger/proto;payment_gateway";
+
+// These annotations are used when generating the OpenAPI file.
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    version: "1.0";
+  };
+  external_docs: {
+    url: "https://github.com/overridesh/checkout-challenger";
+    description: "Checkout Challenger";
+  }
+  schemes: HTTPS;
+  consumes: "application/json";
+  produces: "application/json";
+  security_definitions: {
+    security: {
+      key: "Authorization"
+      value: {
+        type: TYPE_API_KEY
+        in: IN_HEADER
+        name: "Authorization"
+        description: "Authentication token"
+      }
+    }
+  }
+  security: {
+    security_requirement: {
+      key: "Authorization"
+    }
+  }
+};
+
+service PaymentGatewayService {
+  rpc CreatePayment(CreatePaymentRequest) returns (CreatePaymentResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/payment"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Create purchase with pass-in credit card"
+      description: "Pass a credit card payment method directly into the purchase request."
+      tags: "Create payment"
+      extensions: {
+				key: "x-idempotency-key";
+				value {
+					string_value: "";
+				}
+			}
+      responses: {
+        key: "201"
+        value: {
+          description: "Payment processed successfully"
+          schema: {
+            json_schema: {
+              ref: ".payment_gateway.CreatePaymentResponse"
+            }
+          }
+        }
+      }
+      responses: {
+        key: "400";
+        value: {
+          description: "Cannot not process the request due to an apparent client error (e.g., malformed request syntax, size too large, invalid request message framing, or deceptive request routing).";
+          schema: {
+            json_schema: {
+              ref: "#/definitions/rpcStatus"
+            }
+          }
+        }
+      }
+      responses: {
+        key: "401";
+        value: {
+          description: "Returned when Authorization token is invalid";
+          schema: {
+            json_schema: {
+              ref: "#/definitions/rpcStatus"
+            }
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Returned when an unexpected condition was encountered and no more specific message is suitable.";
+          schema: {
+            json_schema: {
+              ref: "#/definitions/rpcStatus"
+            }
+          }
+        }
+      }
+    };
+  }
+  rpc GetPayment(GetPaymentDetailsRequest) returns (GetPaymentDetailsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/payment/{id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get payment details"
+      description: "Returns the details of the payment by identifier string"
+      tags: "Get payment"
+      responses: {
+        key: "400";
+        value: {
+          description: "Cannot not process the request due to an apparent client error (e.g., malformed request syntax, size too large, invalid request message framing, or deceptive request routing).";
+          schema: {
+            json_schema: {
+              ref: "#/definitions/rpcStatus"
+            }
+          }
+        }
+      }
+      responses: {
+        key: "401";
+        value: {
+          description: "Returned when Authorization token is invalid";
+          schema: {
+            json_schema: {
+              ref: "#/definitions/rpcStatus"
+            }
+          }
+        }
+      }
+      responses: {
+        key: "404";
+        value: {
+          description: "Returned when the payment does not exist.";
+          schema: {
+            json_schema: {
+              ref: "#/definitions/rpcStatus"
+            }
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Returned when an unexpected condition was encountered and no more specific message is suitable.";
+          schema: {
+            json_schema: {
+              ref: "#/definitions/rpcStatus"
+            }
+          }
+        }
+      }
+    };
+  }
+}
+
+message CreatePaymentRequest {
+  int32 amount = 1 [(google.api.field_behavior) = REQUIRED];
+  string currency = 2 [(google.api.field_behavior) = REQUIRED];
+  string reference = 3;
+  CreditCard credit_card = 4 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreatePaymentResponse {
+  string id = 1 [(google.api.field_behavior) = REQUIRED];
+  int32 amount = 2 [(google.api.field_behavior) = REQUIRED];
+  string currency = 3 [(google.api.field_behavior) = REQUIRED];
+  Source source = 4 [(google.api.field_behavior) = REQUIRED];
+  string status = 5 [(google.api.field_behavior) = REQUIRED];
+  bool approved = 6 [(google.api.field_behavior) = REQUIRED];
+  string processed_on = 7 [(google.api.field_behavior) = REQUIRED];
+  string response_code = 8 [(google.api.field_behavior) = REQUIRED];
+  string reference = 9;
+
+}
+
+message GetPaymentDetailsRequest  {
+  string id = 1;
+}
+
+message GetPaymentDetailsResponse  {
+  string id = 1 [(google.api.field_behavior) = REQUIRED];
+  string requested_on = 2 [(google.api.field_behavior) = REQUIRED];
+  Source source = 3 [(google.api.field_behavior) = REQUIRED];
+  bool approved = 4 [(google.api.field_behavior) = REQUIRED];
+  string status = 5 [(google.api.field_behavior) = REQUIRED];
+  int32 amount = 6 [(google.api.field_behavior) = REQUIRED];
+  string currency = 7 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreditCard {
+  string first_name = 1 [(google.api.field_behavior) = REQUIRED];
+  string last_name = 2 [(google.api.field_behavior) = REQUIRED];
+  string number = 3 [(google.api.field_behavior) = REQUIRED];
+  string cvv = 4;
+  string expiry_month = 5 [(google.api.field_behavior) = REQUIRED];
+  string expiry_year = 6 [(google.api.field_behavior) = REQUIRED];
+}
+
+message Source {
+  string first_name = 1 [(google.api.field_behavior) = REQUIRED];
+  string last_name = 2 [(google.api.field_behavior) = REQUIRED];
+  string last4 = 3 [(google.api.field_behavior) = REQUIRED];
+  string bin = 4 [(google.api.field_behavior) = REQUIRED];
+  string card_type = 5 [(google.api.field_behavior) = REQUIRED];
+  string expiry_month = 6 [(google.api.field_behavior) = REQUIRED];
+  string expiry_year = 7 [(google.api.field_behavior) = REQUIRED];
+}

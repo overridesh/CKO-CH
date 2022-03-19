@@ -1,0 +1,429 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "payment_gateway.proto",
+    "version": "1.0"
+  },
+  "tags": [
+    {
+      "name": "PaymentGatewayService"
+    }
+  ],
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v1/payment": {
+      "post": {
+        "summary": "Create purchase with pass-in credit card",
+        "description": "Pass a credit card payment method directly into the purchase request.",
+        "operationId": "PaymentGatewayService_CreatePayment",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/payment_gatewayCreatePaymentResponse"
+            }
+          },
+          "201": {
+            "description": "Payment processed successfully",
+            "schema": {
+              "$ref": "#/definitions/payment_gatewayCreatePaymentResponse"
+            }
+          },
+          "400": {
+            "description": "Cannot not process the request due to an apparent client error (e.g., malformed request syntax, size too large, invalid request message framing, or deceptive request routing).",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "401": {
+            "description": "Returned when Authorization token is invalid",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "500": {
+            "description": "Returned when an unexpected condition was encountered and no more specific message is suitable.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/payment_gatewayCreatePaymentRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Create payment"
+        ],
+        "x-idempotency-key": ""
+      }
+    },
+    "/api/v1/payment/{id}": {
+      "get": {
+        "summary": "Get payment details",
+        "description": "Returns the details of the payment by identifier string",
+        "operationId": "PaymentGatewayService_GetPayment",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/payment_gatewayGetPaymentDetailsResponse"
+            }
+          },
+          "400": {
+            "description": "Cannot not process the request due to an apparent client error (e.g., malformed request syntax, size too large, invalid request message framing, or deceptive request routing).",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "401": {
+            "description": "Returned when Authorization token is invalid",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "404": {
+            "description": "Returned when the payment does not exist.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "500": {
+            "description": "Returned when an unexpected condition was encountered and no more specific message is suitable.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Get payment"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "payment_gatewayCreatePaymentRequest": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "integer",
+          "format": "int32",
+          "required": [
+            "amount"
+          ]
+        },
+        "currency": {
+          "type": "string",
+          "required": [
+            "currency"
+          ]
+        },
+        "reference": {
+          "type": "string"
+        },
+        "credit_card": {
+          "$ref": "#/definitions/payment_gatewayCreditCard"
+        }
+      },
+      "required": [
+        "amount",
+        "currency"
+      ]
+    },
+    "payment_gatewayCreatePaymentResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "required": [
+            "id"
+          ]
+        },
+        "amount": {
+          "type": "integer",
+          "format": "int32",
+          "required": [
+            "amount"
+          ]
+        },
+        "currency": {
+          "type": "string",
+          "required": [
+            "currency"
+          ]
+        },
+        "source": {
+          "$ref": "#/definitions/payment_gatewaySource"
+        },
+        "status": {
+          "type": "string",
+          "required": [
+            "status"
+          ]
+        },
+        "approved": {
+          "type": "boolean",
+          "required": [
+            "approved"
+          ]
+        },
+        "processed_on": {
+          "type": "string",
+          "required": [
+            "processed_on"
+          ]
+        },
+        "response_code": {
+          "type": "string",
+          "required": [
+            "response_code"
+          ]
+        },
+        "reference": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "amount",
+        "currency",
+        "status",
+        "approved",
+        "processed_on",
+        "response_code"
+      ]
+    },
+    "payment_gatewayCreditCard": {
+      "type": "object",
+      "properties": {
+        "first_name": {
+          "type": "string",
+          "required": [
+            "first_name"
+          ]
+        },
+        "last_name": {
+          "type": "string",
+          "required": [
+            "last_name"
+          ]
+        },
+        "number": {
+          "type": "string",
+          "required": [
+            "number"
+          ]
+        },
+        "cvv": {
+          "type": "string"
+        },
+        "expiry_month": {
+          "type": "string",
+          "required": [
+            "expiry_month"
+          ]
+        },
+        "expiry_year": {
+          "type": "string",
+          "required": [
+            "expiry_year"
+          ]
+        }
+      },
+      "required": [
+        "first_name",
+        "last_name",
+        "number",
+        "expiry_month",
+        "expiry_year"
+      ]
+    },
+    "payment_gatewayGetPaymentDetailsResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "required": [
+            "id"
+          ]
+        },
+        "requested_on": {
+          "type": "string",
+          "required": [
+            "requested_on"
+          ]
+        },
+        "source": {
+          "$ref": "#/definitions/payment_gatewaySource"
+        },
+        "approved": {
+          "type": "boolean",
+          "required": [
+            "approved"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "required": [
+            "status"
+          ]
+        },
+        "amount": {
+          "type": "integer",
+          "format": "int32",
+          "required": [
+            "amount"
+          ]
+        },
+        "currency": {
+          "type": "string",
+          "required": [
+            "currency"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "requested_on",
+        "approved",
+        "status",
+        "amount",
+        "currency"
+      ]
+    },
+    "payment_gatewaySource": {
+      "type": "object",
+      "properties": {
+        "first_name": {
+          "type": "string",
+          "required": [
+            "first_name"
+          ]
+        },
+        "last_name": {
+          "type": "string",
+          "required": [
+            "last_name"
+          ]
+        },
+        "last4": {
+          "type": "string",
+          "required": [
+            "last4"
+          ]
+        },
+        "bin": {
+          "type": "string",
+          "required": [
+            "bin"
+          ]
+        },
+        "card_type": {
+          "type": "string",
+          "required": [
+            "card_type"
+          ]
+        },
+        "expiry_month": {
+          "type": "string",
+          "required": [
+            "expiry_month"
+          ]
+        },
+        "expiry_year": {
+          "type": "string",
+          "required": [
+            "expiry_year"
+          ]
+        }
+      },
+      "required": [
+        "first_name",
+        "last_name",
+        "last4",
+        "bin",
+        "card_type",
+        "expiry_month",
+        "expiry_year"
+      ]
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "Authorization": {
+      "type": "apiKey",
+      "description": "Authentication token",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "security": [
+    {
+      "Authorization": []
+    }
+  ],
+  "externalDocs": {
+    "description": "Checkout Challenger",
+    "url": "https://github.com/overridesh/checkout-challenger"
+  }
+}
