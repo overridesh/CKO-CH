@@ -1,0 +1,68 @@
+version: '3.5'
+
+services:
+  bank-simulator:
+    build:
+      context: ./bank_simulator
+      dockerfile: Dockerfile
+    networks:
+      - checkout-net
+
+  payment-gateway-db:
+    image: postgres:14.2
+    volumes:
+      - ./gateway/scripts/db/10-init.sql:/docker-entrypoint-initdb.d/10-init.sql
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+    networks:
+      - checkout-net
+
+  payment-gateway-grpc:
+    volumes:
+      - ./gateway:/go/src/github.com/overridesh/checkout-challenger
+      - "$CERTS_DIR/grpc:/etc/certs"
+    environment:
+      DATABASE_USERNAME: dbuser
+      DATABASE_PASSWORD: 12345
+      DATABASE_NAME: paymentgatewaydb
+      DATABASE_HOSTNAME: payment-gateway-db
+      DATABASE_PORT: 5432
+      BANK_SIMULATOR_URL: http://bank-simulator:80
+      BANK_SIMULATOR_APIKEY: ad96f298-ad7c-472e-97b0-17fed769f9f1
+      CERT_FILE: /etc/certs/cert.crt
+      KEY_FILE: /etc/certs/private.key
+    depends_on:
+      - payment-gateway-db
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile.grpc.dev
+    entrypoint: sh -c 'sleep 15 && goose -dir /go/src/github.com/overridesh/checkout-challenger/scripts/db/migrations postgres "host=payment-gateway-db user=dbuser dbname=paymentgatewaydb port=5432 sslmode=disable" up && watcher -watch github.com/overridesh/checkout-challenger'
+    networks:
+      - checkout-net
+
+  payment-gateway-http:
+    volumes:
+      - ./gateway:/go/src/github.com/overridesh/checkout-challenger
+      - "$CERTS_DIR/http:/etc/certs"
+      - "$CERTS_DIR/grpc/cert.crt:/etc/certs/grpc.crt"
+    environment:
+      PAYMENT_GATEWAY_GRPC_HOST: dns:///payment-gateway-grpc:10000
+      PAYMENT_GATEWAY_GRPC_CERT: /etc/certs/grpc.crt
+      CERT_FILE: /etc/certs/cert.crt
+      KEY_FILE: /etc/certs/private.key
+      PORT: 11000
+    depends_on:
+      - payment-gateway-grpc
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile.http.dev
+    ports:
+      - "11000:11000"
+    networks:
+      - checkout-net
+
+networks:
+  checkout-net:
+
