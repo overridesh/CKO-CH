@@ -1,7 +1,6 @@
 package sql
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 
@@ -21,7 +20,7 @@ type DB interface {
 }
 
 // NewConnection create a connection to postgres database
-func NewConnection(ctx context.Context, dbConn string) (DB, error) {
+func NewConnection(dbConn string) (DB, error) {
 	db, err := sql.Open("postgres", dbConn)
 	if err != nil {
 		zap.L().Error(fmt.Sprintf("cannot create connection to db, error: %v", err))

@@ -46,16 +46,16 @@ type services struct {
 // In the future could be inject from Vault or something like that.
 type Config struct {
 	Database struct {
-		User     string `envconfig:"DATABASE_USERNAME" json:"DATABASE_USERNAME" required:"true"`
-		Password string `envconfig:"DATABASE_PASSWORD" json:"DATABASE_PASSWORD" required:"true"`
-		Name     string `envconfig:"DATABASE_NAME" json:"DATABASE_NAME" required:"true"`
-		Host     string `envconfig:"DATABASE_HOSTNAME" json:"DATABASE_HOSTNAME" required:"true"`
-		Port     int32  `envconfig:"DATABASE_PORT" json:"DATABASE_PORT" required:"true"`
+		User     string `envconfig:"DATABASE_USERNAME" required:"true"`
+		Password string `envconfig:"DATABASE_PASSWORD" required:"true"`
+		Name     string `envconfig:"DATABASE_NAME" required:"true"`
+		Host     string `envconfig:"DATABASE_HOSTNAME" required:"true"`
+		Port     int32  `envconfig:"DATABASE_PORT" required:"true"`
 	}
 	Certfile string `envconfig:"CERT_FILE" required:"true"`
 	Keyfile  string `envconfig:"KEY_FILE" required:"true"`
-	Host     string `default:"0.0.0.0" envconfig:"HOST" json:"HOST"`
-	Port     int    `default:"10000" envconfig:"PORT" json:"PORT"`
+	Host     string `default:"0.0.0.0" envconfig:"HOST"`
+	Port     int    `default:"10000" envconfig:"PORT"`
 	Services struct {
 		BankSimulatorURL    string `envconfig:"BANK_SIMULATOR_URL" required:"true"`
 		BankSimulatorApiKey string `envconfig:"BANK_SIMULATOR_APIKEY" required:"true"`
@@ -91,7 +91,7 @@ func main() {
 	prg.config = &config
 
 	// Db Connection
-	prg.sql, err = sql.NewConnection(ctx, fmt.Sprintf("user=%s password=%s host=%s port=%d dbname=%s sslmode=disable",
+	prg.sql, err = sql.NewConnection(fmt.Sprintf("user=%s password=%s host=%s port=%d dbname=%s sslmode=disable",
 		prg.config.Database.User,
 		prg.config.Database.Password,
 		prg.config.Database.Host,
